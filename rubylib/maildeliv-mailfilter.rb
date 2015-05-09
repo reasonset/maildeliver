@@ -27,8 +27,8 @@ module MailFilter
     index = maxi.to_i.succ
     
     ###DEBUG###
-    p maxi
-    p index
+    #p maxi
+    #p index
     ###########
     
     File.open("#{dir}/#{index}", "w") do |f|

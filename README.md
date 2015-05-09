@@ -239,3 +239,10 @@ It is very easy.Like thus
 	$ find Mail -type f -name "[1-9]*" | while read i; do MH=$HOME/Mail_sorted maildeliv.localdeliv.rb --nomemo < "$i"; done
 	$ rm -rf Mail
 	$ mv Mail_sorted Mail
+
+### Debug
+
+Every script write error to STDERR.
+So, you can log it with redirect STDERR of mailchecker.rb to any file.
+
+You can use configuration file about user defined filtering.

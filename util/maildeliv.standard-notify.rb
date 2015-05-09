@@ -78,7 +78,7 @@ class StandardNotify
   end
   
   def invoke_plugins()
-    Dir.glob((ENV["maildeliv_notify_plugdir"] || @maildeliv_conf[:NotifyPluginDir] || "#{ENV["HOME"]}/.yek/notify-plugins") + "/*.rb") do |i|
+    Dir.glob((ENV["maildeliv_notify_plugdir"] || @maildeliv_conf[:NotifyPluginDir] || "#{ENV["HOME"]}/.yek/maildeliv/notify-plugins") + "/*.rb") do |i|
       load i
     end
     

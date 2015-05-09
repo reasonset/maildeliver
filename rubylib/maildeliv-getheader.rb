@@ -76,6 +76,7 @@ module GetHeader
       attr_accessor :domain
       attr_accessor :in
       attr_accessor :body
+      attr_accessor :head
     end
     
     mailobj.mailstr = mailstr
