@@ -19,6 +19,9 @@ class MailDeliver
     
     op.on("-c", "--clam") {|v| @clam = true }
     op.on("-a", "--assassin") {|v| @spam = true }
+    op.on("-M", "--nomemo") {|v| @nomemo = true }
+    
+    op.parse(ARGV)
   end
 
   #Load configuration file.
@@ -68,7 +71,7 @@ class MailDeliver
     
     File.open(sprintf("%s/%.2f.yaml", memodir, Time.now.to_f), "w") do |f|
       YAML.dump(@mailobj.merge({"__address" => @mailobj.address }), f)
-    end
+    end unless @nomemo
     
     nil
   end
@@ -135,7 +138,7 @@ class MailDeliver
   
   #Clam Check
   def clamcheck
-    if @clam && ( @mailobj.headstr.downcase.include?("multipart") || @mailobj.headstr.downcase.include?("boundary") )
+    if @clam && ( @mailobj.head.downcase.include?("multipart") || @mailobj.head.downcase.include?("boundary") )
       IO.popen("clamav", "-", "--quiet") do |io|
         io.write @mailstr
       end

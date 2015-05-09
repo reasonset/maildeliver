@@ -1,4 +1,5 @@
-# maildeliver2
+Mail Deliver 2
+===========
 
 MDA with programmable filter for MH mail folders.
 
@@ -222,3 +223,19 @@ Otherwise, show numbers per sender.
 Normally, it use address for sender identification.
 
 If `ns-usr-from` option is set, use From header instead of address.
+
+## Advanced Usage
+
+### Sorter
+
+You can use `maildelive.localdeliv.rb` as mail sorter.
+
+If you add some sorting rules or some filters, and you got to want to arrange your confused Mailbox.
+LocalDeliver helps you for sorting many e-mails.
+
+It is very easy.Like thus
+
+	$ mkdir Mail_sorted
+	$ find Mail -type f -name "[1-9]*" | while read i; do MH=$HOME/Mail_sorted maildeliv.localdeliv.rb --nomemo < "$i"; done
+	$ rm -rf Mail
+	$ mv Mail_sorted Mail

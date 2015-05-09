@@ -79,6 +79,7 @@ module GetHeader
     end
     
     mailobj.mailstr = mailstr
+    mailobj.head = head
     mailobj.body = body
 
     mailobj
