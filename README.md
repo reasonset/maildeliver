@@ -17,7 +17,7 @@ Display notification script uses `notify-send`.
 
 * Copy maildeliver.localdeliv.rb to your program directory (e.g. /usr/local/bin.)
 * If you want to use utility programs, files in util directory too.
-* Copy configsample directory to ~/.yek/maildeliver.
+* Copy configsample directory to ~/.yek/maildeliv.
 * Copy files in rubylib derectory to your ruby librariy's directory,
   or anywhere you want and write it on configuration file.
 * Copy files you want in notify-plugins directory to ~/.yek/maildeliv/notify-plugins.
