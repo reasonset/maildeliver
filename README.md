@@ -3,6 +3,23 @@ Mail Deliver 2
 
 MDA with programmable filter for MH mail folders.
 
+## Description
+
+This is a MDA and supporting utilities.
+
+You can use this as mail fetcher, sorter, filter and notifier with like a fetchmail program.
+
+You can define extensive filter.
+User defined filter is full programmable.
+You can save to any folder, save to multiple folder, destroy, modify and save, extract or analysis recieved mails.
+
+Notification is plemented by plugin.
+You can full customize notifications.
+
+For example, if you want to save a mail to
+"inbox/<myaddress\>/<hisdomain\>/<hisaddress\>" folder,
+this program can do it.
+
 ## Dependency
 
 This porgram requires Ruby >= 2.0.
