@@ -49,8 +49,8 @@ module GetHeader
     headerlines = Array.new
     
     # Header to UTF-8, concat multiline term, and push headerlines Array.
-    head, body = mailstr.split(/\r?\n\r?\n/, 2)
-    NKF.nkf("-w -Lu -m", head ).each_line do | l |
+    head, body = NKF.nkf( "-w -Lu -m", mailstr ).split(/\r?\n\r?\n/, 2)
+    head.each_line do | l |
       if l =~ /^\s*$/
         break
       elsif l =~ /^\s+/
