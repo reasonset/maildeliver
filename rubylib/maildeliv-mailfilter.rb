@@ -51,7 +51,7 @@ module MailFilter
   
   def destroymail
     STDERR.puts "destroymail() : Destroy a mail from #{@mailobj.address}"
-    if [[ File.exist?(@memofile) ]]
+    if File.exist?(@memofile)
       File.unlink @memofile
     end
     throw :filtering

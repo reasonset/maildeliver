@@ -16,7 +16,7 @@ module GetHeader
       mailobj.address = to
       mailobj.in = in_k
       
-    elsif @maildeliv_conf[:MyAddress].any? {|k, v| in_k =k; File.fnmatch("*" + v + "*", mailobj["TO"]) }
+    elsif @maildeliv_conf[:MyAddress].any? {|k, v| in_k =k; File.fnmatch("*" + v + "*", (mailobj["TO"] || "") ) }
       mailobj.direction = :recieve
       mailobj.address = from
       mailobj.in = in_k
@@ -34,9 +34,11 @@ module GetHeader
   
   def extract_addr(f)
     if f =~ /(?:[^"<]*(?>"[^"]*"))*<([^>]+)>/ # Do From term have NAME<addr> format?
-      address = $1.delete("\" \t/")
+      address = $1.delete("\" \t:<>;[]*/")
+    elsif f =~ /[-_.,+a-zA-Z0-9+]+@[-a-zA-Z0-9.]+/ #Search e-mail address form.
+      address = $&.delete("\" \t:<>;[]*/")
     else
-      address = f.delete("\" \t/")
+      address = f.delete("\" \t:<>/;[]*")
     end
     
     address
@@ -69,6 +71,13 @@ module GetHeader
       end
     end
     
+    #Treat for TO/FROM for it is considered always exist.
+    mailobj["TO"] ||= "UNKNOWN"
+    mailobj["FROM"] ||= "UNKNOWN"
+    mailobj["TO"] = "UNKNOWN" if mailobj["TO"].empty?
+    mailobj["FROM"] = "UNKNOWN" if mailobj["FROM"].empty?
+    
+    
     class <<mailobj
       attr_accessor :mailstr
       attr_accessor :direction
@@ -77,11 +86,22 @@ module GetHeader
       attr_accessor :in
       attr_accessor :body
       attr_accessor :head
+      attr_accessor :list
     end
     
     mailobj.mailstr = mailstr
     mailobj.head = head
     mailobj.body = body
+    
+    #Get Mailing List ID
+    if lid = mailobj["LIST-ID"]
+      lid =~ /"([^"]+)" *<.*?>/ or lid =~ /([^"]+) *<.*?>/ or lid =~ /<(.*?)>/ or lid =~ /\s*(.*)\s*/
+      mailobj.list = $1.delete('"\<>/!?')
+
+    else
+      mailobj.list = nil
+    end
+    
 
     mailobj
   end
