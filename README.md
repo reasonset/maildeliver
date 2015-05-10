@@ -111,7 +111,7 @@ Rules are tested from top.
 `savemail(<folder>, [<exit>])` function save mail to <folder>.
 If <exit> is true,  
 
-`destroymail()` function last sorting this mail without saving.
+`destroymail()` function last sorting this mail without saving and don't leave memo for notification.
 
 ### Mail Object
 
@@ -246,3 +246,9 @@ Every script write error to STDERR.
 So, you can log it with redirect STDERR of mailchecker.rb to any file.
 
 You can use configuration file about user defined filtering.
+
+fetchmail in Mailcheck writes to STDOUT unless you don't define log file for fetchmail in .fetchmailrc.
+If you want to save other file or take to blackhole, you can do it by redirect Mailcheck's STDOUT.
+
+SOX play in Sound Notify write to /dev/null by default.
+If you want to keep log for debug, set @sound_logfile in playsound.rb.

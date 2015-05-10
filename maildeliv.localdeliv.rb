@@ -69,7 +69,9 @@ class MailDeliver
       Dir.mkdir(memodir)
     end
     
-    File.open(sprintf("%s/%.2f.yaml", memodir, Time.now.to_f), "w") do |f|
+    @memofile = sprintf("%s/%.2f.yaml", memodir, Time.now.to_f)
+    
+    File.open(@memofile, "w") do |f|
       YAML.dump(@mailobj.merge({"__address" => @mailobj.address }), f)
     end unless @nomemo
     

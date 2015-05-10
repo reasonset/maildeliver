@@ -50,6 +50,8 @@ module MailFilter
   end
   
   def destroymail
+    STDERR.puts "destroymail() : Destroy a mail from #{@mailobj.address}"
+    File.unlink @memofile
     throw :filtering
   end
   

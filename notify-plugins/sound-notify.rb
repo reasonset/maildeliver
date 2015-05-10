@@ -6,6 +6,8 @@ class SoundNotify
   ARGS = StandardNotify::ARG
   
   def initialize
+    @sound_logfile = nil
+    @default_sound = nil
     get_sound_rule
   end
    
@@ -20,6 +22,7 @@ class SoundNotify
       
     catch :played do
       @sound_rules.each do |i|
+        STDERR.reopen(File.open((@sound_logfile || "/dev/null"), "a"))
         i.match(headers, db)
       end
       
@@ -39,7 +42,7 @@ class SoundNotify
     
     def match(headers, db)
       if @rule.call(headers, db)
-        system "play", @play
+        fork { system "play", @play }
         throw :played
       end
     end
