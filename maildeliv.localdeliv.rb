@@ -179,7 +179,7 @@ class MailDeliver
   #Currently, ignored this.
   def spamcheck
     if spamfilter
-      STDERR.puts "SPAM"
+      STDERR.puts "SpamFilter: SPAM"
       # Alternative Proc is exist?
       if @mailconfv_conf[:SpamProcAlternate]
         @mailconfv_conf[:SpamProcAlternate].call(@mailobj)
@@ -189,7 +189,7 @@ class MailDeliver
         return true
       end
     else
-      STDERR.puts "NOTSPAM"
+      STDERR.puts "SpamFilter: NOTSPAM"
       return false
     end
   end
@@ -197,20 +197,17 @@ class MailDeliver
   # This method returns true if a mail judged as spam.
   def spamfilter
     if @mailobj["X-SPAM-FLAG"]
-      STDERR.puts "A-FLAG"
       # Unless @maildeliv_conf[:RefuseXSpam] is true,
       #   Check X-Spam-* header and use it.
 #      if @maildeliv_conf[:RefuseXSpam]
 #      else
         if @mailobj["X-SPAM-FLAG"].casecmp("yes") == 0
-          STDERR.puts "A-FLAG: YES"
           mailobj.spam = true
           if @mailobj["X-SPAM-LEVEL"]
             mailobj.spamlv = @mailobj["X-SPAM-LEVEL"].length
           end
           return true
         else
-          STDERR.puts "A-FLAG: NO"
           return false
         end
 #      end
@@ -221,7 +218,6 @@ class MailDeliver
     if @spam
       #Invoke @maildeliv_conf[:AntiSpamCommand] as spamassassin.
       IO.popen(@maildeliv_conf[:AntiSpamCommand], "w+") do |io|
-        STDERR.puts "CHECK"
         io.write @mailstr
         io.close_write
         
