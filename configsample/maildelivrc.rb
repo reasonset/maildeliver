@@ -13,5 +13,8 @@
   ModuleDir: "#{ENV["HOME"]}/rubylib",
   TempDir: "#{ENV["HOME"]}/tmp/recv-mails",
   BeforePlugins: [],
-  AfterPlugins: []
+  AfterPlugins: [],
+  AntiSpamCommand: "/usr/bin/vendor_perl/spamc",
+  RefuseXSpam: false,
+  SpamProcAlternate: nil
 }

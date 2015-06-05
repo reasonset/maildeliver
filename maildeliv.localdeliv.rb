@@ -178,7 +178,74 @@ class MailDeliver
   #Spam check with spamassasin
   #Currently, ignored this.
   def spamcheck
-    nil
+    if spamfilter
+      STDERR.puts "SPAM"
+      # Alternative Proc is exist?
+      if @mailconfv_conf[:SpamProcAlternate]
+        @mailconfv_conf[:SpamProcAlternate].call(@mailobj)
+      else
+        savemail("junk", false)
+        destroymail()
+        return true
+      end
+    else
+      STDERR.puts "NOTSPAM"
+      return false
+    end
+  end
+  
+  # This method returns true if a mail judged as spam.
+  def spamfilter
+    if @mailobj["X-SPAM-FLAG"]
+      STDERR.puts "A-FLAG"
+      # Unless @maildeliv_conf[:RefuseXSpam] is true,
+      #   Check X-Spam-* header and use it.
+#      if @maildeliv_conf[:RefuseXSpam]
+#      else
+        if @mailobj["X-SPAM-FLAG"].casecmp("yes") == 0
+          STDERR.puts "A-FLAG: YES"
+          mailobj.spam = true
+          if @mailobj["X-SPAM-LEVEL"]
+            mailobj.spamlv = @mailobj["X-SPAM-LEVEL"].length
+          end
+          return true
+        else
+          STDERR.puts "A-FLAG: NO"
+          return false
+        end
+#      end
+    end
+      
+    
+    #Enabled?
+    if @spam
+      #Invoke @maildeliv_conf[:AntiSpamCommand] as spamassassin.
+      IO.popen(@maildeliv_conf[:AntiSpamCommand], "w+") do |io|
+        STDERR.puts "CHECK"
+        io.write @mailstr
+        io.close_write
+        
+        spambody = io.gets(nil)
+        
+        # Replace Mailbody.
+        if ! spambody.nil? && ! spambody.empty?
+          @mailobj.mailstr = spambody
+        end
+        
+      end
+      
+      #Get spam infomation
+      if @mailobj.mailstr =~ /^X-Spam-Flag: (.*)/
+        @mailobj.spam = ( $1.casecmp("yes") == 0 )
+        if @mailobj.mailstr =~ /^X-Spam-Level: (.*)/
+          @mailobj.spamlv = $1.length
+        end
+      end
+      
+    end
+    
+    return @mailobj.spam
+    
   end
   
   # Save to default folder.

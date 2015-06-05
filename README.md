@@ -112,6 +112,30 @@ Unused.
 
 Unused.
 
+#### AntiSpamCommand
+
+Command path of spamassassin or like it.
+e.g. /usr/bin/vendor_perl/spamc
+
+The command should return mail message with X-Spam-*
+
+#### RefuseXSpam
+
+If antispam function is enabled and already X-Spam-* header is exist,
+normally antispam function use it rather than local anti spam program.
+
+But if this paramater is true,
+antispam function reject exist one and invoke anti spam program.
+
+Currently, unused.
+
+#### SpamProcAlternate
+
+If this paramater set a proc,
+the proc called when spamfilter judged as spam a mail
+instead of default process for save to junk folder and remove from notification.
+
+
 ### mailfilter.rb
 
 Define rules for sorting or filtering.

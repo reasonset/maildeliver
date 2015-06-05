@@ -87,6 +87,8 @@ module GetHeader
       attr_accessor :body
       attr_accessor :head
       attr_accessor :list
+      attr_accessor :spam
+      attr_accessor :spamlv
     end
     
     mailobj.mailstr = mailstr
@@ -96,7 +98,7 @@ module GetHeader
     #Get Mailing List ID
     if lid = mailobj["LIST-ID"]
       lid =~ /"([^"]+)" *<.*?>/ or lid =~ /([^"]+) *<.*?>/ or lid =~ /<(.*?)>/ or lid =~ /\s*(.*)\s*/
-      mailobj.list = $1.delete('"\<>/!?')
+      mailobj.list = $1.delete('"<>/!?\\')
 
     else
       mailobj.list = nil
