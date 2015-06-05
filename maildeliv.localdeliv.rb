@@ -181,8 +181,8 @@ class MailDeliver
     if spamfilter
       STDERR.puts "SpamFilter: SPAM"
       # Alternative Proc is exist?
-      if @mailconfv_conf[:SpamProcAlternate]
-        @mailconfv_conf[:SpamProcAlternate].call(@mailobj)
+      if @maildeliv_conf[:SpamProcAlternate]
+        @maildeliv_conf[:SpamProcAlternate].call(@mailobj)
       else
         savemail("junk", false)
         destroymail()
