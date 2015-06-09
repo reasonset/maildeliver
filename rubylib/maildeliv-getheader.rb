@@ -58,7 +58,7 @@ module GetHeader
       elsif l =~ /^\s+/
         headerlines.last.concat(l.lstrip)
       else
-        headerlines.push(l)
+        headerlines.push(l.strip)
       end
 
     end
