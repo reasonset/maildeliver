@@ -230,10 +230,12 @@ class MailDeliver
         
       end
       
+      serialized_mailbody = NKF.nkf( "-w -Lu -m", @mailobj.mailstr ).split(/\r?\n\r?\n/, 2).first
+      
       #Get spam infomation
-      if @mailobj.mailstr =~ /^X-Spam-Flag: (.*)/
+      if serialized_mailbody =~ /^X-Spam-Flag: (.*)/
         @mailobj.spam = ( $1.casecmp("yes") == 0 )
-        if @mailobj.mailstr =~ /^X-Spam-Level: (.*)/
+        if serialized_mailbody =~ /^X-Spam-Level: (.*)/
           @mailobj.spamlv = $1.length
         end
       end

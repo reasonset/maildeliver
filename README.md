@@ -80,8 +80,6 @@ Folder path for a mail considered as virus.
 
 Folder path for a mail considered as spam.
 
-Currently, spam filter is disabled.
-
 #### FilterLog
 
 If set, you can log to this path that some error in your filter rules.
@@ -192,8 +190,9 @@ Mail body without header.
 
 Simply assain `maildeliver.localdelib.rb` as a MDA.
 
-you can use options `-c` or ``--clam` is checking virus using ClamAV (`clamav - --quiet` command.)
-`-a` or `--assasin` is checking spam using spamassasin, but currently this option don't work.
+you can use options `-c` or `--clam` is checking virus using ClamAV (`clamav - --quiet` command.)
+
+`-a` or `--assasin` is checking spam using spamassasin.
 
 I suppose that localdelive is used in fetchmail.
 
