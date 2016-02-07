@@ -11,12 +11,12 @@ module GetHeader
     from = extract_addr(mailobj["FROM"])
     in_k = nil
     
-    if @maildeliv_conf[:MyAddress].any? {|k, v| in_k =k; File.fnmatch(v, from) }
+    if @maildeliv_conf[:MyAddress].any? {|k, v| in_k =k; File.fnmatch(v, from, File::FNM_EXTGLOB) }
       mailobj.direction = :send
       mailobj.address = to
       mailobj.in = in_k
       
-    elsif @maildeliv_conf[:MyAddress].any? {|k, v| in_k =k; File.fnmatch("*" + v + "*", (mailobj["TO"] || "") ) }
+    elsif @maildeliv_conf[:MyAddress].any? {|k, v| in_k =k; File.fnmatch(("*" + v + "*"), (mailobj["TO"] || ""), File::FNM_EXTGLOB ) }
       mailobj.direction = :recieve
       mailobj.address = from
       mailobj.in = in_k
