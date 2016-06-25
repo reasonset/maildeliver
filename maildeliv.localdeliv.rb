@@ -70,10 +70,30 @@ class MailDeliver
     end
     
     @memofile = sprintf("%s/%.2f.yaml", memodir, Time.now.to_f)
+    headers = @mailobj.merge({"__address" => @mailobj.address })
     
     File.open(@memofile, "w") do |f|
-      YAML.dump(@mailobj.merge({"__address" => @mailobj.address }), f)
+      YAML.dump(headers, f)
     end unless @nomemo
+    
+    # Cumulatively log
+    if @maildeliv_conf[:LeaveHeaders]
+      cumulatively = memodir + ".summery"
+      unless File.exist? cumulatively
+        File.open(cumulatively, "w") {|f| nil }
+      end
+      
+      File.open(cumulatively, "r+") do |f|
+        f.flock(File::LOCK_EX)
+        db = (YAML.load(f) rescue nil)
+        db ||= []
+        
+        db << headers
+        f.seek(0)
+        f.truncate(0)
+        YAML.dump(db ,f)
+      end
+    end
     
     nil
   end
