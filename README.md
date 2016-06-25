@@ -264,6 +264,15 @@ Normally, it use address for sender identification.
 
 If `ns-usr-from` option is set, use From header instead of address.
 
+#### Systray Notification
+
+This function needs `saveheaders.rb` and `yad-systray.rb` plugins and Yad and Zenity command, and to install `maildeliv.yad-systray.rb` and `maildeliv.yad-systray.sh` utils.
+
+You run `maildeliv.yad-systray.sh`. Mail deliver icon is in systray.
+You can check delivered mails with click the icon.
+
+It is reseted when click "OK" on zenity. If you click "Cancel", not reset.
+
 ## Advanced Usage
 
 ### Sorter
