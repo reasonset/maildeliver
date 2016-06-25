@@ -133,6 +133,12 @@ If this paramater set a proc,
 the proc called when spamfilter judged as spam a mail
 instead of default process for save to junk folder and remove from notification.
 
+#### LeaveHeaders
+
+If this paramater is true, cumulatively log is leaved.
+This function may make slow and heavy, but some plugins need to turn on this paramater.
+
+Plugins should be able to clear it.
 
 ### mailfilter.rb
 
@@ -266,7 +272,9 @@ If `ns-usr-from` option is set, use From header instead of address.
 
 #### Systray Notification
 
-This function needs `saveheaders.rb` and `yad-systray.rb` plugins and Yad and Zenity command, and to install `maildeliv.yad-systray.rb` and `maildeliv.yad-systray.sh` utils.
+This function needs `yad-systray.rb` plugins and Yad and Zenity command, and to install `maildeliv.yad-systray.rb` and `maildeliv.yad-systray.sh` utils.
+
+You should turn on `LeaveHeaders`
 
 You run `maildeliv.yad-systray.sh`. Mail deliver icon is in systray.
 You can check delivered mails with click the icon.
