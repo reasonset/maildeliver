@@ -19,7 +19,7 @@ class MailDeliver
 
     op.on("-c", "--clam") {|v| @clam = true }
     op.on("-a", "--assassin") {|v| @spam = true }
-    op.on("-M", "--nomemo") {|v| @nomemo = true; ENV[maildeliv_nomemo] = "true" }
+    op.on("-M", "--nomemo") {|v| @nomemo = true; ENV["maildeliv_nomemo"] = "true" }
 
     op.parse(ARGV)
   end
@@ -141,19 +141,25 @@ class MailDeliver
 
   #Filtering flow.
   def filter
+    if @filtertestmode
 
-    catch :filtering do
-      ##### EXIT WITH throw :filtering #####
+      userfilter(true)
 
-      clamcheck
+    else
 
-      userfilter
+      catch :filtering do
+        ##### EXIT WITH throw :filtering #####
 
-      spamcheck
+        clamcheck
 
-      defaultsaving
+        userfilter
 
-      ######################################
+        spamcheck
+
+        defaultsaving
+
+        ######################################
+      end
     end
 
   end
@@ -184,12 +190,14 @@ class MailDeliver
       end
     rescue
       if @maildeliv_conf[:FilterLog]
+        STDERR.puts ["\e[31m***User Filter Error***\e[0m", Time.now.to_s]
+        STDERR.puts [ $!.to_s, $!.backtrace.first ]
         File.open(@maildeliv_conf[:FilterLog], "a") do |f|
           f.puts Time.now.to_s
           f.puts [ $!.to_s, $!.backtrace.first ]
         end
       else
-        STDERR.puts ["***User Filter Error***", Time.now.to_s]
+        STDERR.puts ["\e[31m***User Filter Error***\e[0m", Time.now.to_s]
         STDERR.puts [ $!.to_s, $!.backtrace.first ]
       end
     end

@@ -3,6 +3,10 @@
 # $2 : Destination MH Folder (exist or non-exist)
 
 export MH="$2"
+if [[ ! -e "$MH" ]]
+then
+  mkdir "$MH"
+fi
 
 find "$1" -type f -name '[0-9]*' | while read i
 do
