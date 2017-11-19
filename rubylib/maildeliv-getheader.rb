@@ -78,7 +78,11 @@ module GetHeader
 
     headerlines.each do |i|
       if i =~ /\A([-_A-Za-z0-9]+)\s*:/ # match header format?
-        mailobj[$1.upcase] = $'.strip
+        if mailobj[$1.upcase]
+          mailobj[$1.upcase] += $'.strip
+        else
+          mailobj[$1.upcase] = $'.strip
+        end
       else
         next
       end
