@@ -52,7 +52,6 @@ class MailDeliver
 
   def loadfilter
     self.instance_eval(File.read(ENV["maildeliv_filter"] || "#{ENV["HOME"]}/.yek/maildeliv/filterrules.rb"))
-
   end
 
 
