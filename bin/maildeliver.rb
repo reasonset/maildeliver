@@ -90,6 +90,8 @@ module MailDeliver
     end
     
     def exec data, mail
+      sprintf("Filter mail from %s", mail.from[0]) rescue nil
+
       force_mode = nil
       @filter_procs.each do |proc|
         begin
@@ -132,10 +134,13 @@ $mdfilter = MailDeliver::MailFilter.new
 load '/etc/maildeliver/maildeliver.rb'
 
 module MailDeliver
-  CONFIG = File.exist?("/etc/maildeliver/basic.yaml") ? YAML.load(File.read("/etc/maildeliver/basic.yaml")) : {
+  CONFIG = {
     "sockpath" => "/tmp/maildeliver.sock",
     "spooldir" => "/var/maildeliver"
   }
+  if File.exist?("/etc/maildeliver/basic.yaml")
+    CONFIG.merge! YAML.load(File.read("/etc/maildeliver/basic.yaml"))
+  end
   
   class MailProxy
     def initialize mail
@@ -160,14 +165,20 @@ module MailDeliver
   class Server
     def initialize
       @queue = Queue.new
+      existing_queue = Dir.children("#{CONFIG["spooldir"]}/queue")
+      existing_queue.each do |i|
+        id = File.basename(i, ".json")
+        @queue.push(id)
+      end
     end
     
     # Start queue server thread.
     def queue_server
       Thread.new do
-        serv = UNIXServer.new(CONFIG["sockpath"])
+        serv = CONFIG["use_unixsock"] ? UNIXServer.new(CONFIG["sockpath"]) : TCPServer.new("localhost", (CONFIG["tcpport"] || 10751))
 
         begin
+          FileUtils.chmod(0666, CONFIG["sockpath"]) if CONFIG["use_unixpath"]
           while s = serv.accept
             id = SecureRandom.uuid
             begin
@@ -182,7 +193,7 @@ module MailDeliver
           end
         ensure
           serv.close
-          File.delete CONFIG["sockpath"]
+          File.delete CONFIG["sockpath"] if CONFIG["use_unixsock"]
         end
       end
     end
@@ -199,6 +210,7 @@ module MailDeliver
           json = File.read "#{CONFIG["spooldir"]}/queue/#{id}.json"
           data = Oj.load json
           mail = Mail.new data["mail"]
+          data["proxy"] = MailProxy.new(data["mail"])
           filter(data, mail)
         rescue => e
           STDERR.puts e.full_message
