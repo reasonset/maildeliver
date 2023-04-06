@@ -170,7 +170,7 @@ How to do when filter raises exception.
 
 `:spam` - Mark as spam.
 
-`:ignore` - Do nothing and continue.
+`:ignore` - Do nothing and continue. (default)
 
 ### basic.yaml
 

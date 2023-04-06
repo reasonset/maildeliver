@@ -78,8 +78,12 @@ module MailDeliver
         io.close_write
         filtered_mail = io.read
       end
-      filtered_headers = MAIL_HEADER_RE.match(filtered_mail)&.pre_match || filtered_mail
-      spam_status = (SPAM_STATUS_RE.match(filtered_mail)&.[](1) || "no").downcase == "yes"
+      
+      # SpamAssassin embeds DECODED mail body on mail.
+      # When mail body is multibyte UTF-8 string, it may break UTF-8 sequence.
+      filtered_headers = MAIL_HEADER_RE.match(filtered_mail.valid_encoding? ? filtered_mail : filtered_mail.encode("UTF-8", "UTF-8", invalid: :replace))&.pre_match || filtered_mail
+
+      spam_status = (SPAM_STATUS_RE.match(filtered_headers)&.[](1) || "no").downcase == "yes"
       data["mail"] = filtered_mail
       data["spam"] ||= spam_status
     end
