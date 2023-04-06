@@ -1,0 +1,13 @@
+[Unit]
+Description=Maildeliver mail filtering server
+
+[Service]
+ExecReload=/bin/kill $MAINPID
+Restart=always
+User=vmail
+ExecStart=/usr/local/bin/maildeliver.rb
+ProtectSystem=full
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+
+[Install]
+WantedBy=multi-user.target

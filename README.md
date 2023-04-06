@@ -1,311 +1,214 @@
-Mail Deliver 2
-===========
+# Mail Deliver
 
-MDA with programmable filter for MH mail folders.
-
-## Description
-
-This is a MDA and supporting utilities.
-
-You can use this as mail fetcher, sorter, filter and notifier with like a fetchmail program.
-
-You can define extensive filter.
-User defined filter is full programmable.
-You can save to any folder, save to multiple folder, destroy, modify and save, extract or analysis recieved mails.
-
-Notification is plemented by plugin.
-You can full customize notifications.
-
-For example, if you want to save a mail to
-"inbox/<myaddress\>/<hisdomain\>/<hisaddress\>" folder,
-this program can do it.
+Mail Ddlivering filter tool
 
 ## Dependency
 
-This porgram requires Ruby >= 2.0.
+* Ruby
+    * Mail Gem
+    * Oj Gem
+* Dovecot (Optional)
+* SpamAssassin (Optional)
+* Systemd (Optional)
 
-Utility scripts need also fetchmail.
+## Model and Design
 
-Sound notification script uses `play` (SOX.)
+Maildeliver called as filter.
 
-Display notification script uses `notify-send`.
+Maildeliver reads mail from STDIN, routing filters, and pass to LDA program.
+They are customizable.
 
 ## Install
 
-* Copy maildeliver.localdeliv.rb to your program directory (e.g. /usr/local/bin.)
-* If you want to use utility programs, files in util directory too.
-* Copy configsample directory to ~/.yek/maildeliv.
-* Copy files in rubylib derectory to your ruby librariy's directory,
-  or anywhere you want and write it on configuration file.
-* Copy files you want in notify-plugins directory to ~/.yek/maildeliv/notify-plugins.
-
-for example
-
-	$ sudo cp maildeliver.localdeliv.rb util/* /usr/local/bin/
-	$ sudo cp -R configsample ~/.yek/maildeliv
-	$ [[ -e "$(ruby -e 'puts $:[1]')" ]] || mkdir -p "$(ruby -e 'puts $:[1]')"
-	$ cp rubylib/* "$(ruby -e 'puts $:[1]')"/
-	$ mkdir ~/.yek/maildeliv/notify-plugins
-	$ cp -R notify-plugins/{sound-notify.rb,notify-send.rb} ~/.yek/maildeliv/notify-plugins/
-
-
-## Configuration
-
-You should to configurate files in `~/.yek/maildeliver`.
-
-### maildeliverrc.rb
-
-`maildeliverrc.rb` is a basic settings for your MailDeliver MDA.
-
-#### MH
-
-Your MH folder path.
-
-Normally, you don't need to change this value.
-
-#### MyAddress
-
-Your e-mail alias name and e-mail address.
-
-Alias name is used as part of file path,
-so you may not use file path unuseful character.
-
-You can use shell wild cards for e-mail address.
-
-#### VirusIsolation
-
-Folder path for a mail considered as virus.
-
-#### SpamIsolation
-
-Folder path for a mail considered as spam.
-
-#### FilterLog
-
-If set, you can log to this path that some error in your filter rules.
-Else some error is output to STDERR.
-
-#### DefaultRule
-
-Mail folder for a mail unmatched in user defined filter.
-
-This value is a Proc object.
-
-This Proc takes a argument as Mail Object,
-and this Proc should return path of default folder.
-
-#### ModuleDir
-
-Additional ruby library's directory for MailDeliver ruby libraries.
-
-#### TempDir
-
-Directory for saving header for notifications.
-
-#### BeforePlugin
-
-Unused.
-
-#### AfterPlugin
-
-Unused.
-
-#### AntiSpamCommand
-
-Command path of spamassassin or like it.
-e.g. /usr/bin/vendor_perl/spamc
-
-The command should return mail message with X-Spam-*
-
-#### RefuseXSpam
-
-If antispam function is enabled and already X-Spam-* header is exist,
-normally antispam function use it rather than local anti spam program.
-
-But if this paramater is true,
-antispam function reject exist one and invoke anti spam program.
-
-Currently, unused.
-
-#### SpamProcAlternate
-
-If this paramater set a proc,
-the proc called when spamfilter judged as spam a mail
-instead of default process for save to junk folder and remove from notification.
-
-#### LeaveHeaders
-
-If this paramater is true, cumulatively log is leaved.
-This function may make slow and heavy, but some plugins need to turn on this paramater.
-
-Plugins should be able to clear it.
-
-### mailfilter.rb
-
-Define rules for sorting or filtering.
-
-Filter struct takes two Procs.
-
-First Proc is conditional Proc.
-If this proc returns true, second proc will be called.
-
-Every Proc is given a Mail Object argument.
-
-Rules are tested from top.
-
-`savemail(<folder>, [<exit>])` function save mail to <folder>.
-If <exit> is true,  
-
-`destroymail()` function last sorting this mail without saving and don't leave memo for notification.
-
-### Mail Object
-
-This is a Hash having uppercased mail header as key and the header value as value,
-and added singleton methods.
-
-	#in
-
-Your mail alias.
-
-	#address
-
-(First) your partner's e-mail address in the mail.
-
-	#domain
-
-(First) your partner's e-mail domain in the mail.
-
-
-	#direction
-
-If your e-mail in From header, set `:send` to it.
-Otherwise, set `:recieve`.
-
-	#mailstr
-
-Raw mail data.
-If you modify it, it effects to saving mail.
-
-	#body
-
-Mail body without header.
+* Copy `bin/*` to on your path.
+* Write `/etc/maildeliver/maildeliver.rb`. I recommend to start with `cp config/maildeliver.rb /etc/maildeliver/`.
+* Optionally, write `/etc/maildeliver/basic.yaml`.
+* Create queue directories.
+* Optionally, `cp systemd/maildeliver.service /etc/systemd/system/`, edit to fit your environment, and start and enable it.
+
+### Creating queue directory
+
+Maildeliver uses `/var/maildeliver` by default (you can override with `spooldir`.)
+For exmaple;
+
+```
+# mkdir -p /var/maildeliver/{queue,error,unreadable}
+# chmod 777 /var/maildeliver/{queue,error,unreadable}
+```
 
 ## Usage
 
-### MDA
+### Starting server
 
-Simply assain `maildeliver.localdelib.rb` as a MDA.
+```
+maildeliver.rb
+```
 
-you can use options `-c` or `--clam` is checking virus using ClamAV (`clamav - --quiet` command.)
+Starting maildeliver server.
 
-`-a` or `--assasin` is checking spam using spamassasin.
+### Process email
 
-I suppose that localdelive is used in fetchmail.
+```
+maildeliver-q.rb <original> <selector> < email
+```
 
-### MailChecker
+`maildeliver-q.rb` reads email from STDIN, and pass to maildeliver server.
 
-### Notification plugins
+If you want to use this as Postfix local(8) alias command, you can use like
 
-Notification plugins notifies on new mail delivered.
+```aliases
+haruka: |"/usr/local/bin/maildeliver.rb haruka haruka@exmaple.com"
+```
 
-This function's core script is standard-notify.rb.
-It calls scripts in plugin directory ( ~/.yek/maildeliv/notify-plugins by default.)
+Notice: Postfix alias command is execused with `nobody` user with private `/tmp`.
 
-Normally, it is called by Mail Checker.
+## Configuration
 
-#### Notification script's objects
+`maildeliver.rb` is a Ruby library.
 
-"headers" is mail header same as mailobj but
+### maildeliver.rb
 
-* No singleton method
-* add `__address` key instead of mailobj.address
+#### Filtering
 
-"db" is a Hash.
+`$mdfilter` is mail filtering object.
+You can set filtering proc like:
 
-* :address -> { address -> num ... } #number per address
-* :from -> { from(header) -> num ... } #number per from header's value
-* :number -> num #total delivered in this time
+```ruby
+$mdfilter.filter_procs.push ->(data, mail) {
+  IO.popen("foofilter", "w") do |io|
+    io.write data["mail"]
+  end
 
-#### Sound Notify
+  unless $?.zero?
+    data["spam"] = true
+  end
+}
+```
 
-Sound notification script plays sound file with SOX play command on new mail delivered.
+`data` object is a Hash.
 
-This plugins setting file is ~/.yek/maildeliv/playsound.rb.
+|Key|Type|Description|
+|-------|----|-----------------------|
+|`mail`|`String`|Mail full string|
+|`original`|`String`|maildeliver-q.rb's 1st argument|
+|`selector`|`String`|maildeliver-q.rb's 2nd argument|
+|`proxy`|`MailProxy`|Object has some check method.|
+|`drop`|`Boolean`|Request to drop this mail|
+|`save`|`Boolean`|Request to save without applying more filter|
+|`spam`|`Boolean`|Mark as spam|
+|`folder`|`String`|Set folder name|
 
-	@sound_rules = [
- 	  Match["#{ENV["HOME"]}/.yek/maildeliv/mailsound/yougotmail.flac", ->(h,d) { d[:address].keys.any? {|i| i.include?("@example.com") }  }]
-	]
-	
-	@default_sound = "#{ENV["HOME"]}/.yek/maildeliv/mailsound/default.wav"
+`data["proxy"]` has some method for custom filtering.
 
-"Match" is
+|Method|Argument|Description|
+|------|--------|-----------------------|
+|`from?`|`glob`|return true if any from address matches glob pattern.|
+|`to?`|`glob`|return true if any to address matches glob pattern.|
 
-	Match[<soundfile>, ->(headers, db) { <matching code> } ]
+`mail` is a `Mail` (Ruby gem) object.
+
+MailDeliver has SpamAssassin filter.
+You can you like:
+
+```ruby
+$mdfilter.filter_procs.push $mdfilter.method(:filter_spamc)
+```
+
+#### Delivering
+
+You can set proc how to deliver mail.
+
+```ruby
+$mdfilter.deliver_proc = ->(data) {
+  IO.popen(["foodeliver", data["selector"]], "w") {|io| io.write data["mail"]}
+}
+```
+
+MailDeliver has some delivering method.
+
+```ruby
+$mdfilter.deliver_proc = $mdfilter.method(:deliver_dovecot)
+```
+
+Use dovecot-lda (`/usr/lib/dovecot/deliver`).
+`selector` is used as `-d` option's argument.
+`folder` is used as `-m` option's argument.
+
+If spam flag is set, add `-m Junk` argument.
+
+```ruby
+$mdfilter.deliver_proc = $mdfilter.method(:deliver_mh)
+```
+
+Put MH mail folder.
+
+if `folder` is set, put there under `inbox`.
+
+if spam flag is set, put spam floder.
+
+`$mdfilter.options[:mh_folder_spam]` is path to Spam folder. `/` means MH Mailbox root. `/Junk` is default.
+
+`$mdfilter.options[:mh_box]` is path to MH Mailbox. `~/Mail` is default.
+
+#### Options
+
+##### `$mdfilter.spam_folder_name`
+
+Spam folder name (`Junk` is default.)
+
+##### `$mdfilter.drop_on_spam`
+
+If it is set, immidiately drop mail when spam flag is set.
+
+##### `$mdfilter.error_on_filter`
+
+How to do when filter raises exception.
+
+`:drop` - Drop (remove) email immidiately.
+
+`:save` - Save email immidiately.
+
+`:spam` - Mark as spam.
+
+`:ignore` - Do nothing and continue. (default)
+
+### basic.yaml
+
+#### `tcpport` (Integer)
+
+TCP Port number.
+`10751` is default.
+
+#### `use_unixsock` (Boolean)
+
+If true, maildeliver uses Unix Domain Socket instread of TCP.
+
+#### `sockpath` (File path)
+
+Unix Domain Socket file path.
+
+This option is effective only if use_unixsock is enabled.
+
+`/tmp/maildeliver.sock` is by default.
+
+#### `spooldir` (File path)
+
+Base directory path for maildeliver uses.
+
+`/var/maildeliver` is by default.
+
+#### `keep_log_into` (File path)
+
+maildeliver-q outs log into the directory.
+
+#### `error_keep_into` (File path)
+
+maildeliver-q outs queuing mail object into the directory on error.
+
+`maildeliver-q-retry.rb` resends these mails.
+
+#### `always_keep_into` (File path)
+
+maildeliver-q outs queuing mail object into the directory before pass to maildeliver server.
 
 
-
-If Match proc returns true, play <soundfile>.
-
-Rules are tested from top and exit after first match.
-
-If `silent` standard-notify option given, fire method return with do nothing.
-
-#### Notify Send
-
-Display graphcal notification with `notify-send`.
-
-Supporting display modes are
-
-##### summerize
-
-You can control with `notyfy-send` option.
-
-If `total` given, show total number of mails.
-
-Otherwise, show numbers per sender.
-
-##### Sender
-
-Normally, it use address for sender identification.
-
-If `ns-usr-from` option is set, use From header instead of address.
-
-#### Systray Notification
-
-This function needs `yad-systray.rb` plugins and Yad and Zenity command, and to install `maildeliv.yad-systray.rb` and `maildeliv.yad-systray.sh` utils.
-
-You should turn on `LeaveHeaders`
-
-You run `maildeliv.yad-systray.sh`. Mail deliver icon is in systray.
-You can check delivered mails with click the icon.
-
-It is reseted when click "OK" on zenity. If you click "Cancel", not reset.
-
-## Advanced Usage
-
-### Sorter
-
-You can use `maildelive.localdeliv.rb` as mail sorter.
-
-If you add some sorting rules or some filters, and you got to want to arrange your confused Mailbox.
-LocalDeliver helps you for sorting many e-mails.
-
-It is very easy.Like thus
-
-	$ mkdir Mail_sorted
-	$ find Mail -type f -name "[1-9]*" | while read i; do MH=$HOME/Mail_sorted maildeliv.localdeliv.rb --nomemo < "$i"; done
-	$ rm -rf Mail
-	$ mv Mail_sorted Mail
-
-### Debug
-
-Every script write error to STDERR.
-So, you can log it with redirect STDERR of mailchecker.rb to any file.
-
-You can use configuration file about user defined filtering.
-
-fetchmail in Mailcheck writes to STDOUT unless you don't define log file for fetchmail in .fetchmailrc.
-If you want to save other file or take to blackhole, you can do it by redirect Mailcheck's STDOUT.
-
-SOX play in Sound Notify write to /dev/null by default.
-If you want to keep log for debug, set @sound_logfile in playsound.rb.
