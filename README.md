@@ -172,6 +172,14 @@ How to do when filter raises exception.
 
 `:ignore` - Do nothing and continue. (default)
 
+##### `$mdfilter.filter_timeout`
+
+Filter raises exception after this seconds left.
+
+If `nil`, do not timeout.
+
+Notice: The note about Ruby's `Timeout.timeout` should be noted.
+
 ### basic.yaml
 
 #### `tcpport` (Integer)
