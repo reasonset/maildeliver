@@ -19,6 +19,7 @@ module MailDeliver
       @options = {}
       @spam_folder_name = "Junk"
       @drop_on_spam = false
+      @feilter_timeout = 60
 
       # :drop ... Remove email.
       # :save ... Save email.
@@ -33,6 +34,7 @@ module MailDeliver
     attr :spam_folder_name, true
     attr :drop_on_spam, true
     attr :error_on_filter, true
+    attr :filter_timeout, true
 
     # Preset Dovecot-LDA deliver proc.
     # It is used by default.
@@ -99,7 +101,9 @@ module MailDeliver
       force_mode = nil
       @filter_procs.each do |proc|
         begin
-          proc.(data, mail)
+          Timeout.timeout(@feilter_timeout) do
+            proc.(data, mail)
+          end
         rescue => e
           STDERR.puts "FILTER_ERROR"
           STDERR.puts e.full_message
