@@ -72,6 +72,16 @@ module MailDeliver
       end
     end
 
+    # Sample deliver proc for development.
+    # You can use as `@deliver_proc = $mdfilter.method(:deliver_sample)`
+    def deliver_sample data
+      pp({
+        spam: data["spam"],
+        folder: data["folder"],
+        length: data["mail"].length
+      })
+    end
+
     # Filter by SpamAssassin
     def filter_spamc data, mail
       filtered_mail = nil
@@ -227,7 +237,7 @@ module MailDeliver
               "message" => e.message,
               "backtrace" => e.backtrace
             }
-            File.open("#{CONFIG["spooldir"]}/error/#{id}.json", "w") {|f| Oj.dump(data, f) }
+            File.open("#{CONFIG["spooldir"]}/error/#{id}.json", "w") {|f| f.write Oj.dump(data) }
           elsif json
             File.open("#{CONFIG["spooldir"]}/error/#{id}.json", "w") {|f| f.write json }
           else
