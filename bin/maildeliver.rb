@@ -239,8 +239,7 @@ module MailDeliver
         begin
           json = File.read "#{CONFIG["spooldir"]}/queue/#{id}.json"
           data = Oj.load json
-          mail = nil
-          Mail.new data["mail"]
+          mail = Mail.new data["mail"]
           data["proxy"] = MailProxy.new(data["mail"])
           filter(data, mail)
         rescue => e
