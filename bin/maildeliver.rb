@@ -250,13 +250,13 @@ module MailDeliver
               "backtrace" => e.backtrace
             }
             File.open("#{CONFIG["spooldir"]}/error/#{id}.json", "w") {|f| f.write Oj.dump(data) }
-            @hooks[:error_data_avilable]&.(data)
+            $mdfilter.hooks[:error_data_avilable]&.(data)
           elsif json
             File.open("#{CONFIG["spooldir"]}/error/#{id}.json", "w") {|f| f.write json }
-            @hooks[:error_on_parse_json]&.(json)
+            $mdfilter.hooks[:error_on_parse_json]&.(json)
           else
             File.open("#{CONFIG["spooldir"]}/unreadable/#{id}", "w") {|f| nil }
-            @hooks[:error_unreadable]&.(id)
+            $mdfilter.hooks[:error_unreadable]&.(id)
           end
         ensure
           File.delete "#{CONFIG["spooldir"]}/queue/#{id}.json"
