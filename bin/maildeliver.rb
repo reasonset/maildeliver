@@ -17,6 +17,7 @@ module MailDeliver
       @filter_procs = []
       
       @options = {}
+      @hooks = {}
       @spam_folder_name = "Junk"
       @drop_on_spam = false
       @feilter_timeout = 60
@@ -28,6 +29,7 @@ module MailDeliver
       @error_on_filter = :ignore
     end
     
+    attr :hooks
     attr :deliver_proc, true
     attr :filter_procs
     attr :options
@@ -106,7 +108,7 @@ module MailDeliver
     end
     
     def exec data, mail
-      sprintf("Filter mail from %s", mail.from[0]) rescue nil
+      STDERR.sprintf("Filter mail from %s", mail.from[0]) rescue nil
 
       force_mode = nil
       @filter_procs.each do |proc|
@@ -130,18 +132,27 @@ module MailDeliver
 
         case
         when data["drop"]
+          STDERR.printf("Mail from %s is force dropped.", mail.from[0]) rescue nil
+          @hooks[:drop]&.(mail)
           force_mode = :drop
           break
         when data["save"]
+          STDERR.printf("Mail from %s is force saved.", mail.from[0]) rescue nil
           force_mode = :save
           break
         when data["spam"] && @drop_on_spam
+          STDERR.printf("Mail from %s is force dropped with drop_on_spam.", mail.from[0]) rescue nil
           force_mode = :drop
           break
         end
       end
 
       return if force_mode == :drop
+
+      if data["spam"]
+        STDERR.printf("Mail from %s is flagged as spam.", mail.from[0]) rescue nil
+        @hooks[:spam]&.(mail)
+      end
 
       @deliver_proc.(data)
     end
@@ -224,10 +235,12 @@ module MailDeliver
     # Take from queue, pass to filter.
     def filter_loop
       while id = @queue.shift
+        STDERR.puts "Dequeue: #{id}"
         begin
           json = File.read "#{CONFIG["spooldir"]}/queue/#{id}.json"
           data = Oj.load json
-          mail = Mail.new data["mail"]
+          mail = nil
+          Mail.new data["mail"]
           data["proxy"] = MailProxy.new(data["mail"])
           filter(data, mail)
         rescue => e
@@ -238,10 +251,13 @@ module MailDeliver
               "backtrace" => e.backtrace
             }
             File.open("#{CONFIG["spooldir"]}/error/#{id}.json", "w") {|f| f.write Oj.dump(data) }
+            @hooks[:error_data_avilable]&.(data)
           elsif json
             File.open("#{CONFIG["spooldir"]}/error/#{id}.json", "w") {|f| f.write json }
+            @hooks[:error_on_parse_json]&.(json)
           else
             File.open("#{CONFIG["spooldir"]}/unreadable/#{id}", "w") {|f| nil }
+            @hooks[:error_unreadable]&.(id)
           end
         ensure
           File.delete "#{CONFIG["spooldir"]}/queue/#{id}.json"

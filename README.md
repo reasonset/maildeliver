@@ -150,6 +150,20 @@ if spam flag is set, put spam floder.
 
 `$mdfilter.options[:mh_box]` is path to MH Mailbox. `~/Mail` is default.
 
+#### Hooks
+
+You can register hook Proc to `$mdfilter.hooks`.
+
+|Key|Argument|Description|
+|-----|----------|--------------------------|
+|`:drop`|`Mail`|Mail is flagged as `drop`.|
+|`:spam`|`Mail`|Mail is flagged as `spam`.|
+|`:error_data_avilable`|data (`Hash`)|Queue item JSON is parsed but exception is raised. You can mail data as `data["mail"]`|
+|`:error_on_parse_json`|`String` (JSON)|Queue item is dequeued but failed to parse JSON.|
+|`:error_unreadable`|id (`String`)|Failed to read queue item (file.)|
+
+
+
 #### Options
 
 ##### `$mdfilter.spam_folder_name`
