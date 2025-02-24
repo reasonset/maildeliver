@@ -239,7 +239,7 @@ module MailDeliver
         begin
           json = File.read "#{CONFIG["spooldir"]}/queue/#{id}.json"
           data = Oj.load json
-          mail = Mail.new data["mail"]
+          mail = Mail.new data["mail"].encode("UTF-8", "UTF-8", invalid: :replace)
           data["proxy"] = MailProxy.new(data["mail"])
           filter(data, mail)
         rescue => e
