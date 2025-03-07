@@ -240,6 +240,10 @@ module MailDeliver
           json = File.read "#{CONFIG["spooldir"]}/queue/#{id}.json"
           data = Oj.load json
 
+          if !data["selector"] || !data["original"]
+            raise "selector (#{data["selector"]}) or original (#{data["original"]}) is missing. Luck of args?"
+          end
+
           mail = nil
           begin
             mail = Mail.new data["mail"]
