@@ -135,16 +135,17 @@ module MailDeliver
           STDERR.printf("Mail from %s is force dropped.", mail.from[0]) rescue nil
           @hooks[:drop]&.(mail)
           force_mode = :drop
-          break
         when data["save"]
           STDERR.printf("Mail from %s is force saved.", mail.from[0]) rescue nil
           force_mode = :save
-          break
         when data["spam"] && @drop_on_spam
           STDERR.printf("Mail from %s is force dropped with drop_on_spam.", mail.from[0]) rescue nil
           force_mode = :drop
-          break
+        when data["spam"]
+          force_mode = :spam
         end
+
+        break if force_mode
       end
 
       return if force_mode == :drop

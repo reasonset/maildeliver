@@ -162,8 +162,6 @@ You can register hook Proc to `$mdfilter.hooks`.
 |`:error_on_parse_json`|`String` (JSON)|Queue item is dequeued but failed to parse JSON.|
 |`:error_unreadable`|id (`String`)|Failed to read queue item (file.)|
 
-
-
 #### Options
 
 ##### `$mdfilter.spam_folder_name`
